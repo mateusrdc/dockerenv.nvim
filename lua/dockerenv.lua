@@ -19,7 +19,7 @@ M.load_container_env = function(containerName)
 			return false
 		end
 
-		vim.ui.select(available_containers, { prompt = "Selecione o container desejado:" }, function(choice)
+		helpers.pick(available_containers, "Selecione o container desejado:", function(choice)
 			main.load_container_env(choice)
 		end)
 
