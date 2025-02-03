@@ -83,6 +83,19 @@ function helpers.get_container_binaries_as_map(containerName)
 end
 
 function helpers.find_lspconfig_path()
+	-- check if lazy.nvim is installed in the default path
+	local lazy_nvim_default_path = vim.fn.stdpath("data") .. "/lazy"
+
+	if vim.fn.isdirectory(lazy_nvim_default_path) == 1 then
+		for fileName, type in (vim.fs.dir(lazy_nvim_default_path)) do
+			if fileName == "nvim-lspconfig" and type == "directory" then
+				return vim.fs.joinpath(lazy_nvim_default_path, fileName)
+			end
+		end
+	end
+
+	-- search import paths
+	-- this is more error prone as lspconfig may not be loaded yet
 	for _, v in pairs(vim.opt.rtp:get()) do
 		if v:match("/nvim%-lspconfig") then
 			return v
