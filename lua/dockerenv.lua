@@ -1,9 +1,13 @@
 local main = require("dockerenv.main")
 local helpers = require("dockerenv.helpers")
+local config = require("dockerenv.config")
 
 local M = {}
 
-M.setup = function()
+--- @param opts Config?
+M.setup = function(opts)
+	config = vim.tbl_deep_extend("force", config, opts or {})
+
 	vim.api.nvim_create_user_command("LoadDockerEnv", function(data)
 		M.load_container_env(data.args)
 	end, { desc = "Load a docker environment's lsp packages", nargs = "?" })

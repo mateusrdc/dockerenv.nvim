@@ -1,4 +1,5 @@
 local helpers = require("dockerenv.helpers")
+local config = require("dockerenv.config")
 
 local main = {}
 
@@ -23,7 +24,7 @@ function main.load_container_env(containerName, opts)
 
 	for _, server in ipairs(main.get_available_servers(containerName)) do
 		vim.schedule(function()
-			require("lspconfig")[server].setup({})
+			require("lspconfig")[server].setup(config.lspconfig_setup_options or {})
 		end)
 	end
 
