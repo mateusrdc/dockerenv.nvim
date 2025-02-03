@@ -28,9 +28,9 @@ function main.load_container_env(containerName)
 	for name, entryType in vim.fs.dir(configs_path) do
 		if entryType == "file" then
 			local safe_name = name:gsub("%.lua", "")
-			local cfg = require("lspconfig.configs." .. safe_name)
+			local ok, cfg = pcall(require, "lspconfig.configs." .. safe_name)
 
-			if cfg.default_config.cmd then
+			if ok and cfg.default_config.cmd then
 				local cmd = cfg.default_config.cmd
 
 				if type(cmd) == "table" then
