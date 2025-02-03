@@ -103,4 +103,34 @@ function helpers.find_lspconfig_path()
 	end
 end
 
+--- @return boolean
+function helpers.any_file_loaded()
+	for _, bufid in pairs(vim.api.nvim_list_bufs()) do
+		if vim.api.nvim_buf_is_loaded(bufid) then
+			local buftype = vim.api.nvim_get_option_value("buftype", { buf = bufid })
+
+			if buftype ~= "nofile" then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+--- @return boolean
+function helpers.has_unsaved_changes()
+	for _, bufid in pairs(vim.api.nvim_list_bufs()) do
+		if vim.api.nvim_buf_is_loaded(bufid) then
+			local modified = vim.api.nvim_get_option_value("modified", { buf = bufid })
+
+			if modified then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
 return helpers

@@ -6,7 +6,8 @@ local main = {}
 local originalPATH = nil
 
 --- @param containerName string
-function main.load_container_env(containerName)
+--- @param opts { reload_buffers: boolean }
+function main.load_container_env(containerName, opts)
 	local container_path = helpers.get_container_path(containerName)
 
 	if not vim.uv.fs_stat(container_path) then
@@ -20,10 +21,34 @@ function main.load_container_env(containerName)
 
 	vim.env.PATH = container_path .. ":" .. originalPATH
 
+	for _, server in ipairs(main.get_available_servers(containerName)) do
+		vim.schedule(function()
+			require("lspconfig")[server].setup({})
+		end)
+	end
+
+	if opts.reload_buffers then
+		for _, bufid in pairs(vim.api.nvim_list_bufs()) do
+			if vim.api.nvim_buf_is_loaded(bufid) then
+				if vim.api.nvim_get_option_value("modifiable", { buf = bufid }) then
+					vim.schedule(function()
+						vim.api.nvim_buf_call(bufid, function()
+							vim.cmd({ cmd = "edit", bang = true })
+						end)
+					end)
+				end
+			end
+		end
+	end
+end
+
+--- @param containerName string
+--- @return string[]
+function main.get_available_servers(containerName)
 	local binaries = helpers.get_container_binaries_as_map(containerName)
 	local lspconfig_path = helpers.find_lspconfig_path()
 	local configs_path = vim.fs.joinpath(lspconfig_path, "lua", "lspconfig", "configs/")
-	local to_be_started_servers = {}
+	local result = {} --- @type string[]
 
 	for name, entryType in vim.fs.dir(configs_path) do
 		if entryType == "file" then
@@ -42,17 +67,13 @@ function main.load_container_env(containerName)
 				end
 
 				if binaries[cmd] then
-					table.insert(to_be_started_servers, safe_name)
+					table.insert(result, safe_name)
 				end
 			end
 		end
 	end
 
-	for _, server in ipairs(to_be_started_servers) do
-		vim.schedule(function()
-			require("lspconfig")[server].setup({})
-		end)
-	end
+	return result
 end
 
 return main

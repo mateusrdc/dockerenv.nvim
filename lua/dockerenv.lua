@@ -11,6 +11,24 @@ end
 
 --- @param containerName string | nil
 M.load_container_env = function(containerName)
+	local actual_main = function(choice)
+		local reload_buffers = false
+		if helpers.any_file_loaded() then
+			if helpers.has_unsaved_changes() then
+				vim.ui.input(
+					{ prompt = "Recarregar todos os buffers? As alterações não salvas serão perdidas (S/n): " },
+					function(input)
+						reload_buffers = input:lower() == "s" or input:lower() == "y" or input == ""
+					end
+				)
+			else
+				reload_buffers = true
+			end
+		end
+
+		main.load_container_env(choice, { reload_buffers = reload_buffers })
+	end
+
 	if not containerName or containerName == "" then
 		local available_containers = helpers.get_available_containers()
 
@@ -20,13 +38,13 @@ M.load_container_env = function(containerName)
 		end
 
 		helpers.pick(available_containers, "Selecione o container desejado:", function(choice)
-			main.load_container_env(choice)
+			actual_main(choice)
 		end)
 
 		return
 	end
 
-	main.load_container_env(containerName)
+	actual_main(containerName)
 end
 
 return M
