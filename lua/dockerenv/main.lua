@@ -24,7 +24,7 @@ function main.load_container_env(containerName, opts)
 
 	for _, server in ipairs(main.get_available_servers(containerName)) do
 		vim.schedule(function()
-			require("lspconfig")[server].setup(config.lspconfig_setup_options or {})
+			require("lspconfig")[server].setup(config.value.lspconfig_setup_options or {})
 		end)
 	end
 

@@ -12,4 +12,4 @@ local default_options = {
 	end)(),
 }
 
-return default_options
+return { value = default_options }
