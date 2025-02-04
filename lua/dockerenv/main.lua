@@ -1,5 +1,6 @@
 local helpers = require("dockerenv.helpers")
 local config = require("dockerenv.config")
+local mappings = require("dockerenv.mappings")
 
 local main = {}
 
@@ -47,28 +48,39 @@ end
 --- @return string[]
 function main.get_available_servers(containerName)
 	local binaries = helpers.get_container_binaries_as_map(containerName)
-	local lspconfig_path = helpers.find_lspconfig_path()
-	local configs_path = vim.fs.joinpath(lspconfig_path, "lua", "lspconfig", "configs/")
 	local result = {} --- @type string[]
 
-	for name, entryType in vim.fs.dir(configs_path) do
-		if entryType == "file" then
-			local safe_name = name:gsub("%.lua", "")
-			local ok, cfg = pcall(require, "lspconfig.configs." .. safe_name)
+	if config.value.binary_mapping_strategy == "use_mappings" then
+		for binaryName in pairs(binaries) do
+			local lspconfig_key = mappings[binaryName]
 
-			if ok and cfg.default_config.cmd then
-				local cmd = cfg.default_config.cmd
+			if lspconfig_key then
+				table.insert(result, lspconfig_key)
+			end
+		end
+	elseif config.value.binary_mapping_strategy == "inspect_lspconfig" then
+		local lspconfig_path = helpers.find_lspconfig_path()
+		local configs_path = vim.fs.joinpath(lspconfig_path, "lua", "lspconfig", "configs/")
 
-				if type(cmd) == "table" then
-					cmd = vim.fs.basename(cmd[1])
-				elseif type(cmd) == "string" then
-					cmd = vim.fs.basename(cmd)
-				else
-					cmd = nil
-				end
+		for name, entryType in vim.fs.dir(configs_path) do
+			if entryType == "file" then
+				local safe_name = name:gsub("%.lua", "")
+				local ok, cfg = pcall(require, "lspconfig.configs." .. safe_name)
 
-				if binaries[cmd] then
-					table.insert(result, safe_name)
+				if ok and cfg.default_config.cmd then
+					local cmd = cfg.default_config.cmd
+
+					if type(cmd) == "table" then
+						cmd = vim.fs.basename(cmd[1])
+					elseif type(cmd) == "string" then
+						cmd = vim.fs.basename(cmd)
+					else
+						cmd = nil
+					end
+
+					if binaries[cmd] then
+						table.insert(result, safe_name)
+					end
 				end
 			end
 		end

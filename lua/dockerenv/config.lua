@@ -1,5 +1,8 @@
 --- @class Config
 local default_options = {
+	--- @type "use_mappings" | "inspect_lspconfig"
+	binary_mapping_strategy = "use_mappings",
+
 	--- @type { on_attach: function?, on_init: function?, capabilities: table? }?
 	lspconfig_setup_options = (function()
 		local is_nvchad, nvlsp = pcall(require, "nvchad.configs.lspconfig")
