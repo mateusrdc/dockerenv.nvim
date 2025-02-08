@@ -32,7 +32,10 @@ function main.load_container_env(containerName, opts)
 	if opts.reload_buffers then
 		for _, bufid in pairs(vim.api.nvim_list_bufs()) do
 			if vim.api.nvim_buf_is_loaded(bufid) then
-				if vim.api.nvim_get_option_value("modifiable", { buf = bufid }) then
+				local isModifiable = vim.api.nvim_get_option_value("modifiable", { buf = bufid })
+				local fileName = vim.api.nvim_buf_get_name(bufid)
+
+				if isModifiable and fileName ~= "" then
 					vim.schedule(function()
 						vim.api.nvim_buf_call(bufid, function()
 							vim.cmd({ cmd = "edit", bang = true })
