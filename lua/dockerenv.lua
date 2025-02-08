@@ -6,7 +6,7 @@ local M = {}
 
 --- @param opts Config?
 M.setup = function(opts)
-	config.value = vim.tbl_deep_extend("force", config, opts or {})
+	config.value = vim.tbl_deep_extend("force", config.value, opts or {})
 
 	vim.api.nvim_create_user_command("LoadDockerEnv", function(data)
 		M.load_container_env(data.args)
